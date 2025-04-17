@@ -1,40 +1,32 @@
-// 檢查是否已經加載過控制器，避免重複注入
 if (!document.getElementById('yt-speed-controller')) {
-
-  // 創建控制器容器
   const controller = document.createElement('div');
   controller.id = 'yt-speed-controller';
 
-  // 設定樣式
+  // 基本樣式
   controller.style.position = 'fixed';
-  controller.style.top = '20%';
-  controller.style.right = '20px';
+  controller.style.top = '0px';
   controller.style.zIndex = '9999';
   controller.style.background = 'white';
   controller.style.border = '1px solid #ccc';
   controller.style.borderRadius = '10px';
-  controller.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
-  controller.style.padding = '2px'; // 外圍 padding 設為 2px
-  controller.style.fontSize = '16px';
+  controller.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
+  controller.style.padding = '2px';
+  controller.style.fontSize = '12px';
   controller.style.fontFamily = 'sans-serif';
-  controller.style.cursor = 'move'; // 提示可移動
+  controller.style.cursor = 'move';
+  controller.style.display = 'flex';
 
-  // 可選速度清單
-  const speeds = [1, 1.25, 1.5, 2];
-
-  // 創建按鈕們
-  speeds.forEach(speed => {
+  // 加入速度按鈕
+  [1, 1.25, 1.5, 2].forEach(speed => {
     const btn = document.createElement('button');
     btn.innerText = speed + 'x';
     btn.style.margin = '2px';
-    btn.style.padding = '5px 10px';
+    btn.style.padding = '0px 4px';
+    btn.style.fontSize = '14px';
     btn.style.cursor = 'pointer';
 
-    // 點擊時改變影片速度
     btn.addEventListener('click', () => {
       const video = document.querySelector('video');
-
-      // 若找到影片，設定播放速度
       if (video) {
         video.playbackRate = speed;
       } else {
@@ -45,31 +37,85 @@ if (!document.getElementById('yt-speed-controller')) {
     controller.appendChild(btn);
   });
 
-  // 允許拖動功能
+  // 加入 x 隱藏按鈕（純文字樣式）
+  const toggleBtn = document.createElement('button');
+  toggleBtn.innerText = 'x';
+  toggleBtn.title = '隱藏控制器';
+  toggleBtn.style.all = 'unset';
+  toggleBtn.style.cursor = 'pointer';
+  toggleBtn.style.marginLeft = '4px';
+  toggleBtn.style.padding = '2px';
+  toggleBtn.style.fontSize = '14px';
+
+  toggleBtn.addEventListener('click', () => {
+    controller.style.display = 'none';
+
+    const reopenBtn = document.createElement('button');
+    reopenBtn.innerText = '⚙️';
+    reopenBtn.title = '顯示控制器';
+    reopenBtn.id = 'yt-speed-reopen-btn';
+
+    reopenBtn.style.position = 'fixed';
+    reopenBtn.style.top = '0px';
+    reopenBtn.style.right = '0px';
+    reopenBtn.style.zIndex = '10000';
+    reopenBtn.style.padding = '2px 4px'; // 長方形按鈕
+    reopenBtn.style.borderRadius = '4px'; // 一點圓角（可選）
+    reopenBtn.style.border = '1px solid #ccc';
+    reopenBtn.style.background = 'white';
+    reopenBtn.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
+    reopenBtn.style.cursor = 'pointer';
+    reopenBtn.style.fontSize = '14px';
+
+    reopenBtn.addEventListener('click', () => {
+      controller.style.display = 'flex';
+      reopenBtn.remove();
+    });
+
+    document.body.appendChild(reopenBtn);
+  });
+
+  controller.appendChild(toggleBtn);
+  document.body.appendChild(controller);
+
+  // 等待加入 DOM 後，計算寬度並放到右上角
+  requestAnimationFrame(() => {
+    const paddingRight = 10;
+    const initialLeft = window.innerWidth - controller.offsetWidth - paddingRight;
+    controller.style.left = `${initialLeft}px`;
+  });
+
+  // 拖曳邏輯（限制邊界）
   let isDragging = false;
   let offsetX = 0;
   let offsetY = 0;
 
   controller.addEventListener('mousedown', (e) => {
     isDragging = true;
-    offsetX = e.clientX - controller.getBoundingClientRect().left;
-    offsetY = e.clientY - controller.getBoundingClientRect().top;
+    const rect = controller.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
     controller.style.cursor = 'grabbing';
   });
 
   document.addEventListener('mousemove', (e) => {
-    if (isDragging) {
-      controller.style.left = `${e.clientX - offsetX}px`;
-      controller.style.top = `${e.clientY - offsetY}px`;
-      controller.style.right = 'auto'; // 移除原本固定位置
-    }
+    if (!isDragging) return;
+
+    let newLeft = e.clientX - offsetX;
+    let newTop = e.clientY - offsetY;
+
+    const maxLeft = window.innerWidth - controller.offsetWidth;
+    const maxTop = window.innerHeight - controller.offsetHeight;
+
+    newLeft = Math.max(0, Math.min(maxLeft, newLeft));
+    newTop = Math.max(0, Math.min(maxTop, newTop));
+
+    controller.style.left = `${newLeft}px`;
+    controller.style.top = `${newTop}px`;
   });
 
   document.addEventListener('mouseup', () => {
     isDragging = false;
     controller.style.cursor = 'move';
   });
-
-  // 加到頁面上
-  document.body.appendChild(controller);
 }
