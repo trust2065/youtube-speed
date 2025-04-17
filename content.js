@@ -12,7 +12,7 @@ if (!document.getElementById('yt-speed-controller')) {
   controller.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
   controller.style.padding = '2px';
   controller.style.fontSize = '12px';
-  controller.style.fontFamily = 'sans-serif';
+  controller.style.fontFamily = '"Roboto", "Segoe UI", "Helvetica Neue", system-ui, sans-serif';
   controller.style.cursor = 'move';
   controller.style.display = 'flex';
 
