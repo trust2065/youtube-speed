@@ -1,146 +1,75 @@
-// Function to inject or update the custom UI
-function injectOrUpdateUI() {
-  const existingUI = document.getElementById('yt-speed-controller');
+// 檢查是否已經加載過控制器，避免重複注入
+if (!document.getElementById('yt-speed-controller')) {
 
-  // If the UI already exists, remove it to avoid duplication
-  if (existingUI) {
-    existingUI.remove();
-  }
+  // 創建控制器容器
+  const controller = document.createElement('div');
+  controller.id = 'yt-speed-controller';
 
-  // HTML content for the UI
-  const uiHTML = `
-    <div id="yt-speed-controller" style="border-radius: 10px; display:flex; position: fixed; top: 10%; right: 100px; background: white; border: 1px solid #ccc; z-index: 10000; padding: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.5); cursor: move;">
-      <div id="speed-controls" style="display: block; margin-top: 5px; padding: 0px;">
-        <button data-speed="1">1x</button>
-        <button data-speed="1.25">1.25x</button>
-        <button data-speed="1.5">1.5x</button>
-        <button data-speed="2">2x</button>
-      </div>
-      <button id="toggle-speed-control" style="padding: 5px; background: transparent; border: none;">
-        <span id="toggle-text" style="display: none;">YT</span>
-        <img style="width: 10px; height: 10px;" src="https://img.icons8.com/ios-glyphs/20/000000/expand-arrow.png" alt="Toggle" id="toggle-icon">
-      </button>
-    </div>
-  `;
+  // 設定樣式
+  controller.style.position = 'fixed';
+  controller.style.top = '20%';
+  controller.style.right = '20px';
+  controller.style.zIndex = '9999';
+  controller.style.background = 'white';
+  controller.style.border = '1px solid #ccc';
+  controller.style.borderRadius = '10px';
+  controller.style.boxShadow = '0 0 10px rgba(0,0,0,0.2)';
+  controller.style.padding = '2px'; // 外圍 padding 設為 2px
+  controller.style.fontSize = '16px';
+  controller.style.fontFamily = 'sans-serif';
+  controller.style.cursor = 'move'; // 提示可移動
 
-  // Create a new div and set its HTML content
-  const uiContainer = document.createElement('div');
-  uiContainer.innerHTML = uiHTML;
+  // 可選速度清單
+  const speeds = [1, 1.25, 1.5, 2];
 
-  // Append the UI container to the body
-  document.body.appendChild(uiContainer);
+  // 創建按鈕們
+  speeds.forEach(speed => {
+    const btn = document.createElement('button');
+    btn.innerText = speed + 'x';
+    btn.style.margin = '2px';
+    btn.style.padding = '5px 10px';
+    btn.style.cursor = 'pointer';
 
-  // Add event listener to the toggle button
-  document.getElementById('toggle-speed-control').addEventListener('click', () => {
-    const speedControls = document.getElementById('speed-controls');
-    const ytSpeedController = document.getElementById('yt-speed-controller');
-    const toggleIcon = document.getElementById('toggle-icon');
-    const ytText = document.getElementById('toggle-text');
-    if (speedControls.style.display === 'none') {
-      speedControls.style.display = 'block';
-      ytSpeedController.style.padding = '5px';
-      ytSpeedController.style.width = '180px';
-      toggleIcon.style.display = 'block';
-      ytText.style.display = 'none';
-    } else {
-      speedControls.style.display = 'none';
-      ytSpeedController.style.padding = '0px';
-      ytSpeedController.style.width = '30px';
-      toggleIcon.style.display = 'none';
-      ytText.style.display = 'block';
-    }
-  });
+    // 點擊時改變影片速度
+    btn.addEventListener('click', () => {
+      const video = document.querySelector('video');
 
-  // Add event listeners to the speed buttons
-  const buttons = uiContainer.querySelectorAll('#speed-controls button');
-  buttons.forEach(button => {
-    button.addEventListener('click', (event) => {
-      const speed = parseFloat(event.target.dataset.speed);
-      setPlaybackSpeed(speed);
-    });
-  });
-
-  // Make the UI draggable
-  makeDraggable(document.getElementById('yt-speed-controller'));
-}
-
-// Function to set the playback speed of the YouTube video
-function setPlaybackSpeed(speed) {
-  const video = document.querySelector('video');
-  if (video) {
-    video.playbackRate = speed;
-  }
-}
-
-// Function to make the UI draggable
-function makeDraggable(element) {
-  let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  let isDragging = false;
-
-  element.onmousedown = dragMouseDown;
-
-  function dragMouseDown(e) {
-    e = e || window.event;
-    e.preventDefault();
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    isDragging = true;
-    document.onmouseup = closeDragElement;
-    document.onmousemove = throttle(elementDrag, 16); // Throttle the dragging function to 60fps
-  }
-
-  function elementDrag(e) {
-    if (!isDragging) return;
-
-    e = e || window.event;
-    e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    requestAnimationFrame(() => {
-      element.style.top = (element.offsetTop - pos2) + "px";
-      element.style.left = (element.offsetLeft - pos1) + "px";
-    });
-  }
-
-  function closeDragElement() {
-    isDragging = false;
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
-
-  function throttle(func, limit) {
-    let inThrottle;
-    return function () {
-      const args = arguments;
-      const context = this;
-      if (!inThrottle) {
-        func.apply(context, args);
-        inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+      // 若找到影片，設定播放速度
+      if (video) {
+        video.playbackRate = speed;
+      } else {
+        alert('找不到影片');
       }
-    };
-  }
-}
+    });
 
-function monitorYouTubeNavigation() {
-  let lastUrl = location.href;
+    controller.appendChild(btn);
+  });
 
-  // 用於觀察 <title> 變動（通常代表影片換了）
-  const observer = new MutationObserver(() => {
-    if (location.href !== lastUrl) {
-      lastUrl = location.href;
-      setTimeout(() => {
-        injectOrUpdateUI(); // 重新注入 UI
-      }, 500); // 延遲一點點讓影片元素載入完成
+  // 允許拖動功能
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  controller.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - controller.getBoundingClientRect().left;
+    offsetY = e.clientY - controller.getBoundingClientRect().top;
+    controller.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      controller.style.left = `${e.clientX - offsetX}px`;
+      controller.style.top = `${e.clientY - offsetY}px`;
+      controller.style.right = 'auto'; // 移除原本固定位置
     }
   });
 
-  const config = { childList: true, subtree: true };
-  observer.observe(document.querySelector('title'), config);
-}
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    controller.style.cursor = 'move';
+  });
 
-// Inject or update the UI when the content script is loaded
-injectOrUpdateUI();
-// monitorYouTubeNavigation();
+  // 加到頁面上
+  document.body.appendChild(controller);
+}
