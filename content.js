@@ -2,7 +2,7 @@ if (!document.getElementById('yt-speed-controller')) {
   const controller = document.createElement('div');
   controller.id = 'yt-speed-controller';
 
-  // 基本樣式
+  // 控制器樣式
   controller.style.position = 'fixed';
   controller.style.top = '0px';
   controller.style.zIndex = '9999';
@@ -16,7 +16,7 @@ if (!document.getElementById('yt-speed-controller')) {
   controller.style.cursor = 'move';
   controller.style.display = 'flex';
 
-  // 加入速度按鈕
+  // 建立速度按鈕
   [1, 1.25, 1.5, 2].forEach(speed => {
     const btn = document.createElement('button');
     btn.innerText = speed + 'x';
@@ -26,18 +26,34 @@ if (!document.getElementById('yt-speed-controller')) {
     btn.style.cursor = 'pointer';
 
     btn.addEventListener('click', () => {
-      const video = document.querySelector('video');
-      if (video) {
-        video.playbackRate = speed;
-      } else {
-        alert('找不到影片');
+      const speedStr = speed === 1 ? '正常' : speed.toString();
+      const items = document.querySelectorAll('.ytp-menuitem');
+      let clicked = false;
+
+      // 嘗試從設定選單中找對應的速度項目
+      items.forEach(item => {
+        const label = item.querySelector('.ytp-menuitem-label');
+        if (label && label.innerText === speedStr) {
+          label.click();
+          clicked = true;
+        }
+      });
+
+      if (!clicked) {
+        // 備案：仍直接設定 video 速度（可能不會同步 UI 顯示）
+        const video = document.querySelector('video');
+        if (video) {
+          video.playbackRate = speed;
+        } else {
+          alert('找不到影片');
+        }
       }
     });
 
     controller.appendChild(btn);
   });
 
-  // 加入 x 隱藏按鈕（純文字樣式）
+  // 隱藏按鈕
   const toggleBtn = document.createElement('button');
   toggleBtn.innerText = 'x';
   toggleBtn.title = '隱藏控制器';
@@ -59,8 +75,8 @@ if (!document.getElementById('yt-speed-controller')) {
     reopenBtn.style.top = '0px';
     reopenBtn.style.right = '0px';
     reopenBtn.style.zIndex = '10000';
-    reopenBtn.style.padding = '2px 4px'; // 長方形按鈕
-    reopenBtn.style.borderRadius = '4px'; // 一點圓角（可選）
+    reopenBtn.style.padding = '2px 4px';
+    reopenBtn.style.borderRadius = '4px';
     reopenBtn.style.border = '1px solid #ccc';
     reopenBtn.style.background = 'white';
     reopenBtn.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
@@ -78,14 +94,14 @@ if (!document.getElementById('yt-speed-controller')) {
   controller.appendChild(toggleBtn);
   document.body.appendChild(controller);
 
-  // 等待加入 DOM 後，計算寬度並放到右上角
+  // 放到右上角
   requestAnimationFrame(() => {
     const paddingRight = 10;
     const initialLeft = window.innerWidth - controller.offsetWidth - paddingRight;
     controller.style.left = `${initialLeft}px`;
   });
 
-  // 拖曳邏輯（限制邊界）
+  // 拖曳功能
   let isDragging = false;
   let offsetX = 0;
   let offsetY = 0;
