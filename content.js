@@ -134,4 +134,21 @@ if (!document.getElementById('yt-speed-controller')) {
     isDragging = false;
     controller.style.cursor = 'move';
   });
+
+  // 定義移動控制器到右上角的函式
+  function moveControllerToTopRight() {
+    const controller = document.getElementById('yt-speed-controller');
+    if (!controller) return;
+
+    const paddingRight = 10;
+    const newLeft = window.innerWidth - controller.offsetWidth - paddingRight;
+    controller.style.left = `${newLeft}px`;
+    controller.style.top = '0px';
+  }
+
+  // 視窗大小改變時重新定位
+  window.addEventListener('resize', moveControllerToTopRight);
+
+  // 切換全螢幕時重新定位
+  document.addEventListener('fullscreenchange', moveControllerToTopRight);
 }
