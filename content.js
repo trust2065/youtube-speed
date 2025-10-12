@@ -48,6 +48,14 @@ if (!document.getElementById('yt-speed-controller')) {
           alert('找不到影片');
         }
       }
+
+      // 🟢 讓焦點回到播放器;
+      const player = document.querySelector('.html5-video-player');
+      if (player) {
+        player.focus();
+      } else {
+        document.body.focus();
+      }
     });
 
     controller.appendChild(btn);
