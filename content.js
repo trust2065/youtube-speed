@@ -115,6 +115,7 @@ if (!document.getElementById('yt-speed-controller')) {
   let offsetY = 0;
 
   controller.addEventListener('mousedown', (e) => {
+    if (e.target.tagName === 'BUTTON') return;
     isDragging = true;
     const rect = controller.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
