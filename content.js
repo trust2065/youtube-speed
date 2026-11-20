@@ -2,15 +2,57 @@ if (!document.getElementById('yt-speed-controller')) {
   const controller = document.createElement('div');
   controller.id = 'yt-speed-controller';
 
-  // 控制器樣式
+  const style = document.createElement('style');
+  style.textContent = `
+    #yt-speed-controller {
+      align-items: center;
+      gap: 4px;
+      padding: 6px;
+      background: rgba(15, 15, 15, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+      color: #fff;
+      opacity: 0;
+      pointer-events: none;
+      user-select: none;
+      transition: opacity 180ms ease;
+    }
+
+    #yt-speed-controller.yt-speed-visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #yt-speed-controller .yt-speed-button {
+      min-width: 42px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #eee;
+      font: 600 12px/1 "Roboto", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+      cursor: pointer;
+      transition: background-color 120ms ease, color 120ms ease, transform 120ms ease;
+    }
+
+    #yt-speed-controller .yt-speed-button:hover,
+    #yt-speed-controller .yt-speed-button:focus-visible {
+      background: #ff0033;
+      color: #fff;
+      outline: none;
+    }
+
+    #yt-speed-controller .yt-speed-button:active {
+      transform: scale(0.95);
+    }
+
+  `;
+  document.head.appendChild(style);
+
   controller.style.position = 'fixed';
   controller.style.top = '0px';
   controller.style.zIndex = '9999';
-  controller.style.background = 'white';
-  controller.style.border = '1px solid #ccc';
-  controller.style.borderRadius = '10px';
-  controller.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
-  controller.style.padding = '2px';
   controller.style.fontSize = '12px';
   controller.style.fontFamily = '"Roboto", "Segoe UI", "Helvetica Neue", system-ui, sans-serif';
   controller.style.cursor = 'move';
@@ -20,10 +62,8 @@ if (!document.getElementById('yt-speed-controller')) {
   [1, 1.25, 1.5, 2].forEach(speed => {
     const btn = document.createElement('button');
     btn.innerText = speed + 'x';
-    btn.style.margin = '2px';
-    btn.style.padding = '0px 4px';
-    btn.style.fontSize = '14px';
-    btn.style.cursor = 'pointer';
+    btn.className = 'yt-speed-button';
+    btn.type = 'button';
 
     btn.addEventListener('click', () => {
       const speedStr = speed === 1 ? '正常' : speed.toString();
@@ -61,46 +101,17 @@ if (!document.getElementById('yt-speed-controller')) {
     controller.appendChild(btn);
   });
 
-  // 隱藏按鈕
-  const toggleBtn = document.createElement('button');
-  toggleBtn.innerText = 'x';
-  toggleBtn.title = '隱藏控制器';
-  toggleBtn.style.all = 'unset';
-  toggleBtn.style.cursor = 'pointer';
-  toggleBtn.style.marginLeft = '4px';
-  toggleBtn.style.padding = '2px';
-  toggleBtn.style.fontSize = '14px';
-
-  toggleBtn.addEventListener('click', () => {
-    controller.style.display = 'none';
-
-    const reopenBtn = document.createElement('button');
-    reopenBtn.innerText = '⚙️';
-    reopenBtn.title = '顯示控制器';
-    reopenBtn.id = 'yt-speed-reopen-btn';
-
-    reopenBtn.style.position = 'fixed';
-    reopenBtn.style.top = '0px';
-    reopenBtn.style.right = '0px';
-    reopenBtn.style.zIndex = '10000';
-    reopenBtn.style.padding = '2px 4px';
-    reopenBtn.style.borderRadius = '4px';
-    reopenBtn.style.border = '1px solid #ccc';
-    reopenBtn.style.background = 'white';
-    reopenBtn.style.boxShadow = '0 0 5px rgba(0,0,0,0.2)';
-    reopenBtn.style.cursor = 'pointer';
-    reopenBtn.style.fontSize = '14px';
-
-    reopenBtn.addEventListener('click', () => {
-      controller.style.display = 'flex';
-      reopenBtn.remove();
-    });
-
-    document.body.appendChild(reopenBtn);
-  });
-
-  controller.appendChild(toggleBtn);
   document.body.appendChild(controller);
+
+  let hideTimeout;
+
+  function showController() {
+    controller.classList.add('yt-speed-visible');
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+      controller.classList.remove('yt-speed-visible');
+    }, 5000);
+  }
 
   // 放到右上角
   requestAnimationFrame(() => {
@@ -124,6 +135,7 @@ if (!document.getElementById('yt-speed-controller')) {
   });
 
   document.addEventListener('mousemove', (e) => {
+    showController();
     if (!isDragging) return;
 
     let newLeft = e.clientX - offsetX;
