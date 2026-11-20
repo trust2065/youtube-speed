@@ -66,27 +66,11 @@ if (!document.getElementById('yt-speed-controller')) {
     btn.type = 'button';
 
     btn.addEventListener('click', () => {
-      const speedStr = speed === 1 ? '正常' : speed.toString();
-      const items = document.querySelectorAll('.ytp-menuitem');
-      let clicked = false;
-
-      // 嘗試從設定選單中找對應的速度項目
-      items.forEach(item => {
-        const label = item.querySelector('.ytp-menuitem-label');
-        if (label && label.innerText === speedStr) {
-          label.click();
-          clicked = true;
-        }
-      });
-
-      if (!clicked) {
-        // 備案：仍直接設定 video 速度（可能不會同步 UI 顯示）
-        const video = document.querySelector('video');
-        if (video) {
-          video.playbackRate = speed;
-        } else {
-          alert('找不到影片');
-        }
+      const video = document.querySelector('video');
+      if (video) {
+        video.playbackRate = speed;
+      } else {
+        alert('找不到影片');
       }
 
       // 🟢 讓焦點回到播放器;
